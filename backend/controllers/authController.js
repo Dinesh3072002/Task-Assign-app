@@ -32,4 +32,8 @@ exports.signup = async (req, res) => {
         console.error("SIGNUP ERROR:", err);
         res.status(500).json({ message: err.message });
     }
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> 83f1c3ed1dbe087284f3c840ab945ca62683f785
