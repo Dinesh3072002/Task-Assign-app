@@ -15,37 +15,43 @@ const initDb = async () => {
 
         const connection = await pool.getConnection();
 
-        console.log("✅ MySQL Connected");
+        console.log("✅ MySQL Connected via initDb");
 
-        // Create tables if not exist
+        // Create Users Table
         await connection.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                email VARCHAR(255) UNIQUE,
-                password VARCHAR(255),
+                name VARCHAR(255) NOT NULL,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                role ENUM('Manager', 'Employee') DEFAULT 'Employee',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
+            ) ENGINE=InnoDB
         `);
 
+        // Create Tasks Table
         await connection.query(`
             CREATE TABLE IF NOT EXISTS tasks (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                title VARCHAR(255),
-                completed BOOLEAN DEFAULT false,
-                user_id INT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
+                user_id INT NOT NULL,
+                assigned_by INT,
+                title VARCHAR(255) NOT NULL,
+                status ENUM('Pending', 'Completed') DEFAULT 'Pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL
+            ) ENGINE=InnoDB
         `);
 
         connection.release();
+        return pool;
 
     } catch (err) {
-        console.error("❌ DB Error:", err.message);
+        console.error("❌ DB Initialization Error:", err.message);
         throw err;
     }
 };
 
-// export pool for usage
 const getPool = () => {
     if (!pool) {
         throw new Error("Database not initialized");
